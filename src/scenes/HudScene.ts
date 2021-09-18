@@ -13,7 +13,7 @@ import GameScene from './GameScene';
 export default class HudScene extends Scene
 {
     private mainScene: GameScene;
-    private lifeText: Phaser.GameObjects.BitmapText;
+    private coinText: Phaser.GameObjects.BitmapText;
 
     constructor ()
     {
@@ -30,18 +30,20 @@ export default class HudScene extends Scene
             .setSize(WIDTH, HEIGHT / 8)
             .setAlpha(0);
 
-        this.lifeText = this.add.bitmapText(WIDTH / 2, HEIGHT / 16, FONT, '3', FONT_SIZE, 1)
+        this.coinText = this.add.bitmapText(WIDTH / 12 + 16, HEIGHT / 16, FONT, '0', FONT_SIZE, 1)
             .setOrigin(0.5, 0.5);
 
-        this.mainScene.events.on('setHealth', (life: number ) =>
+        this.add.image(WIDTH / 12, HEIGHT / 16 - 3, 'coin', 6).setScale(0.6);
+
+        this.mainScene.events.on('setCoin', (coin: number ) =>
         {
-            this.lifeText.setText(life.toString());
+            this.coinText.setText(coin.toString());
         });
 
-        this.showtHud();
+        this.showHud();
     }
 
-    private showtHud (): void
+    private showHud (): void
     {
         this.cameras.main.setAlpha(1);
     }

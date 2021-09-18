@@ -6,6 +6,9 @@ import progressBar from '../assets/ui/progress-bar.png';
 import progressBarBg from '../assets/ui/progress-bar-bg.png';
 import galaxy8 from '../assets/fonts/galaxy/galaxy8.png';
 import galaxy8XML from '../assets/fonts/galaxy/galaxy8.xml';
+import background from '../assets/graphics/background.png';
+
+import { COLOR } from '../constant/color';
 
 
 
@@ -31,13 +34,15 @@ export default class LogoScene extends Scene
         this.load.image('progressBar', progressBar);
         this.load.image('progressBarBg', progressBarBg);
         this.load.bitmapFont('galaxy8', galaxy8, galaxy8XML);
+        this.load.image('background', background);
     }
 
     public create (): void
     {
-        const sceneTitleText: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, 'logo scene', FONT_SIZE, 1)
+        const sceneTitleText: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, 'huhmiel games', FONT_SIZE, 1)
             .setOrigin(0.5, 0.5)
-            .setAlpha(0);
+            .setAlpha(0)
+            .setTintFill(COLOR.WHITE);
 
         const tweenSceneTitleText: Phaser.Tweens.Tween = this.tweens.add({
             targets: sceneTitleText,
@@ -63,5 +68,21 @@ export default class LogoScene extends Scene
 
             this.scene.start(SCENE_NAME.LOADING);
         });
+
+        // handle click events on mobile
+        const { android, iOS } = this.sys.game.device.os;
+
+        if (android || iOS)
+        {
+            this.input.once('pointerdown', (pointer: Phaser.Input.Pointer) =>
+            {
+                if (pointer.leftButtonDown())
+                {
+                    tweenSceneTitleText.stop();
+
+                    this.scene.start(SCENE_NAME.LOADING);
+                }
+            });
+        }
     }
 }
