@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { COLOR } from '../constant/color';
 import { FONT, FONT_SIZE, HEIGHT, SCENE_NAME, WIDTH } from '../constant/config';
 import GameScene from './GameScene';
 
@@ -14,6 +15,7 @@ export default class HudScene extends Scene
 {
     private mainScene: GameScene;
     private coinText: Phaser.GameObjects.BitmapText;
+    private speedText: Phaser.GameObjects.BitmapText;
 
     constructor ()
     {
@@ -30,14 +32,20 @@ export default class HudScene extends Scene
             .setSize(WIDTH, HEIGHT / 8)
             .setAlpha(0);
 
-        this.coinText = this.add.bitmapText(WIDTH / 12 + 16, HEIGHT / 16, FONT, '0', FONT_SIZE, 1)
-            .setOrigin(0.5, 0.5);
-
-        this.add.image(WIDTH / 12, HEIGHT / 16 - 3, 'coin', 6).setScale(0.6);
+        this.coinText = this.add.bitmapText(WIDTH / 12 + 16, HEIGHT / 16, FONT, '0 points', FONT_SIZE, 0)
+            .setOrigin(0.5, 0.5).setTintFill(COLOR.WHITE);
+        
+        this.speedText = this.add.bitmapText(WIDTH - 48, HEIGHT / 16, FONT, 'speed : 90', FONT_SIZE, 0)
+        .setOrigin(0.5, 0.5).setTintFill(COLOR.WHITE);
 
         this.mainScene.events.on('setCoin', (coin: number ) =>
         {
-            this.coinText.setText(coin.toString());
+            this.coinText.setText(`${coin.toString()} points`);
+        });
+
+        this.mainScene.events.on('setSpeed', (speed: number ) =>
+        {
+            this.speedText.setText(`speed: ${speed.toString()}`);
         });
 
         this.showHud();

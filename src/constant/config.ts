@@ -5,6 +5,7 @@ export const HEIGHT: number = 192;
 export const GRAVITY: number = 1;
 export const FONT: string = 'galaxy8';
 export const FONT_SIZE: number = 8;
+export const BONUS: number = 25;
 
 /**
  * Enum with scene names

@@ -38,3 +38,7 @@ Player: https://penusbmic.itch.io/
 Bullet: https://vectorpixelstar.itch.io/game-boy-icons
 
 Font: Fonts For Flash https://www.dafont.com/fr/fff-galaxy.font
+
+Music game over theme and end stage theme: https://maskedsound.itch.io/8-bit-action-music-pack
+
+Music Main theme: https://itch.io/queue/c/1018548/-free-music-packs?game_id=774875

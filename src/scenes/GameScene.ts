@@ -3,7 +3,7 @@ import Bullet from '../characters/Bullet';
 import Coin from '../characters/Coin';
 import Player from '../characters/Player';
 import { COLOR } from '../constant/color';
-import { WIDTH, HEIGHT, FONT, FONT_SIZE, SCENE_NAME, DEPTH } from '../constant/config';
+import { WIDTH, HEIGHT, FONT, FONT_SIZE, SCENE_NAME, DEPTH, BONUS } from '../constant/config';
 
 /**
  * @description a main game scene example
@@ -27,6 +27,8 @@ export default class GameScene extends Scene
     public speed: number = 90;
     public isBlur: boolean = false;
     private pauseText: Phaser.GameObjects.BitmapText;
+    private music: Phaser.Sound.BaseSound;
+    private levelCount: number = 1;
 
     constructor ()
     {
@@ -80,6 +82,8 @@ export default class GameScene extends Scene
         this.cameras.main.startFollow(this.player).setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
         this.addColliders();
+
+        this.music = this.sound.add('music', { volume: 0.4, loop: true });
 
         // Launch the HUD Scene
         this.scene.launch(SCENE_NAME.HUD).setActive(true, SCENE_NAME.HUD);
@@ -138,6 +142,7 @@ export default class GameScene extends Scene
         }
 
         this.startCountDown();
+        this.music.play();
     }
 
     public update (time: number, delta: number): void
@@ -175,9 +180,12 @@ export default class GameScene extends Scene
                 if (startCount > 0)
                 {
                     countDownText.setText(`start in ${startCount.toString()}`);
+                    this.playSound('blipSfx');
                 }
                 else
                 {
+                    this.playSound('blipSfx', { rate: 0.95 });
+
                     this.player?.setPause(false);
 
                     this.bullet?.setPause(false);
@@ -298,6 +306,10 @@ export default class GameScene extends Scene
 
         this.level = 1;
         this.speed = 90;
+        this.levelCount = 1;
+
+        this.music.stop();
+        this.playSound('gameOverTheme', { volume: 0.5 });
 
         this.time.addEvent({
             delay: 1000,
@@ -317,10 +329,13 @@ export default class GameScene extends Scene
 
         this.isEndStage = true;
 
-        const bonus = this.speed * this.level * this.level;
+        this.levelCount += 1;
+
+        const bonus = (BONUS + this.speed / 2) * this.levelCount;
 
         const { x, y } = this.bullet.body.center;
         const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(DEPTH.EXPLOSION).anims.play('explode', true);
+        this.music.stop();
         this.playSound('explosionSfx');
 
         this.bullet.body.setEnable(false);
@@ -335,6 +350,8 @@ export default class GameScene extends Scene
             this.player.setFlipX(false);
             this.player.anims.play('player-walk', true);
 
+            this.playSound('victoryTheme', { volume: 0.5, rate: 1.1 });
+
             this.tweens.add({
                 targets: this.player,
                 x: this.map.widthInPixels + 64,
@@ -346,6 +363,7 @@ export default class GameScene extends Scene
                     {
                         this.level = 1;
                         this.speed += 10;
+                        this.events.emit('setSpeed', this.speed);
                     }
 
                     const midPoint = this.cameras.main.midPoint;
@@ -357,7 +375,7 @@ export default class GameScene extends Scene
 
                     // add level bonus
                     const bonusTimer = this.time.addEvent({
-                        delay: 2000,
+                        delay: 2500,
                         callback: () =>
                         {
                             this.player.setBonus(bonus);
@@ -414,6 +432,7 @@ export default class GameScene extends Scene
         this.bullet.body.setEnable(true).reset(10, HEIGHT - 32);
 
         this.startCountDown();
+        this.music.play();
 
         this.isEndStage = false;
     }
