@@ -152,10 +152,10 @@ export default class Player extends Phaser.GameObjects.Sprite
 
     private setGravityMomentum (): void
     {
-        this.body.setGravityY(400);
+        this.body.setGravityY(0);
 
         this.scene.time.addEvent({
-            delay: 150,
+            delay: 100,
             callback: this.resetGravity,
             callbackScope: this
         });
