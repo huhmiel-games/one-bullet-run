@@ -26,7 +26,7 @@ export default class GameScene extends Scene
     public player: Player;
     public speed: number = 90;
     public isBlur: boolean = false;
-    // private pauseText: Phaser.GameObjects.BitmapText;
+    private pauseText: Phaser.GameObjects.BitmapText;
     // private countDownText: Phaser.GameObjects.BitmapText;
 
     constructor ()
@@ -85,16 +85,58 @@ export default class GameScene extends Scene
         // Launch the HUD Scene
         this.scene.launch(SCENE_NAME.HUD).setActive(true, SCENE_NAME.HUD);
 
-        // prevents sounds to play if blur TODO: pause
-        this.game.events.on('blur', () =>
+        // pause the game
+        if (this.game.events.listenerCount('blur') < 4)
         {
-            this.isBlur = true;
-        });
+            this.game.events.on('blur', () =>
+            {
+                this.isBlur = true;
 
-        this.game.events.on('focus', () =>
-        {
-            this.isBlur = false;
-        });
+                this.player?.setPause(true).anims?.pause();
+
+                this.bullet?.setPause(true);
+
+                this.coins.forEach(coin =>
+                {
+                    if (coin.active)
+                    {
+                        coin.anims.pause();
+                    }
+                });
+
+                if (!this.cameras.main)
+                {
+                    return;
+                }
+
+                const midPoint = this.cameras.main.midPoint;
+
+                this.pauseText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'pause', FONT_SIZE * 2, 1)
+                    .setDepth(50)
+                    .setOrigin(0.5, 0)
+                    .setTintFill(COLOR.WHITE);
+            });
+
+            // unpause the game
+            this.game.events.on('focus', () =>
+            {
+                this.isBlur = false;
+
+                this.player?.setPause(false).anims?.resume();
+
+                this.bullet?.setPause(false);
+
+                this.coins.forEach(coin =>
+                {
+                    if (coin.active)
+                    {
+                        coin.anims.resume();
+                    }
+                });
+
+                this.pauseText?.destroy();
+            });
+        }
 
         this.startCountDown();
     }
@@ -103,7 +145,7 @@ export default class GameScene extends Scene
     {
         // Handle logic here
         // end of stage
-        if (this.player.body.x > 3850)
+        if (this.player.body.x > 3900)
         {
             this.endStage();
         }
@@ -113,17 +155,14 @@ export default class GameScene extends Scene
     {
         const stageTextValue = `stage : ${this.level} speed : ${this.speed}`;
 
-        const stageText = this.add.bitmapText(WIDTH / 4, HEIGHT / 2 - 64, FONT, stageTextValue , FONT_SIZE, 1)
+        const stageText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2 - 64, FONT, stageTextValue, FONT_SIZE, 1)
             .setDepth(50)
-            .setTintFill(COLOR.WHITE);
-
-        this.time.addEvent({
-            delay: 3000,
-            callback: () => stageText.destroy()
-        });
+            .setOrigin(0.5, 0)
+            .setTintFill(COLOR.GREEN_LIGHT);
 
         const countDownText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2 - 32, FONT, 'start in 4', FONT_SIZE, 1)
             .setDepth(50)
+            .setOrigin(0.5, 0)
             .setTintFill(COLOR.WHITE);
 
         // start countdown
@@ -140,24 +179,16 @@ export default class GameScene extends Scene
                 }
                 else
                 {
-                    countDownText.setText('go');
-                }
-
-                if (countDownTimer.getOverallProgress() === 1)
-                {
                     this.player?.setPause(false);
                     this.bullet?.setPause(false);
-
-                    this.time.addEvent({
-                        delay: 1000,
-                        callback: () => countDownText.destroy()
-                    });
+                    countDownText.destroy();
+                    stageText.destroy();
                 }
             },
         });
     }
 
-    public playSound (snd: string, config: Phaser.Types.Sound.SoundConfig = { }): void
+    public playSound (snd: string, config: Phaser.Types.Sound.SoundConfig = {}): void
     {
         if (this.isBlur)
         {

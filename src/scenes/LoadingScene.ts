@@ -84,7 +84,15 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'player-jump',
-            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 0, end: 4 }),
+            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 0, end: 0 }),
+            frameRate: 6,
+            yoyo: false,
+            repeat: -1,
+        });
+
+        this.anims.create({
+            key: 'player-fall',
+            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 1, end: 4 }),
             frameRate: 6,
             yoyo: false,
             repeat: -1,

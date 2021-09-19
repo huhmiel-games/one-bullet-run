@@ -20,6 +20,7 @@ export default class Player extends Phaser.GameObjects.Sprite
     private isDead: boolean = false;
     private isPaused: boolean = false;
     private coinCount: number = 0;
+    private isJumping: boolean = false;
 
     constructor (scene: GameScene, x: number, y: number, texture: string, frame: string)
     {
@@ -29,8 +30,6 @@ export default class Player extends Phaser.GameObjects.Sprite
         this.scene.physics.world.enable(this);
         this.scene.add.existing(this);
 
-        // this.body.setCollideWorldBounds(true);
-
         this.keys = this.scene.input.keyboard.createCursorKeys();
 
         this.setDepth(20);
@@ -38,21 +37,19 @@ export default class Player extends Phaser.GameObjects.Sprite
         this.anims.play('player-walk');
 
         this.body.setSize(15, 15, false)
-            .setOffset(19, 12);
+            .setOffset(19, 12)
+            .setGravityY(1000);
 
-        // handle animation
-        this.on('animationupdate', () =>
+        // handle walk animation after jump
+        this.on('animationcomplete', () =>
         {
             const currentAnim = this.anims.getName();
-
-            if (currentAnim === 'player-jump' && this.body.blocked.down)
-            {
-                this.anims.play('player-land', true);
-            }
 
             if (currentAnim === 'player-land')
             {
                 this.anims.play('player-walk', true);
+
+                this.isJumping = false;
             }
         });
 
@@ -68,8 +65,6 @@ export default class Player extends Phaser.GameObjects.Sprite
                     this.jumpTime = this.scene.time.now;
 
                     this.body.setVelocityY(-400);
-
-                    this.anims.play(`player-jump`, true);
 
                     this.scene.playSound('jumpSfx');
                 }
@@ -89,17 +84,61 @@ export default class Player extends Phaser.GameObjects.Sprite
         }
 
         const { up } = this.keys;
+        const { blocked } = this.body;
 
-        // handle jump
-        if (up.isDown && up.getDuration() < 250 && this.body.blocked.down && this.jumpTime < time + 200)
+        // jump now
+        if (up.isDown && up.getDuration() < 250 && blocked.down && !this.isJumping)
         {
             this.jumpTime = time;
 
+            this.isJumping = true;
+
             this.body.setVelocityY(-400);
 
-            this.anims.play(`player-jump`, true);
-
             this.scene.playSound('jumpSfx');
+
+            this.anims.play('player-jump', true);
+        }
+
+        // end of jump
+        if (up.isDown && this.isJumping && this.jumpTime + 350 < time)
+        {
+            this.isJumping = false;
+
+            this.body.setVelocityY(0);
+
+            this.setGravityMomentum();
+
+            this.anims.play('player-fall', true);
+        }
+        
+        // player stop the jump
+        if (up.isUp && this.isJumping)
+        {
+            this.isJumping = false;
+
+            this.body.setVelocityY(0);
+
+            this.setGravityMomentum();
+
+            this.anims.play('player-fall', true);
+        }
+
+        // if blocked to ceiling
+        if (blocked.up)
+        {
+            this.body.setVelocityY(0);
+        }
+
+        // handle land animation
+        if (blocked.down)
+        {
+            const currentAnim = this.anims.getName();
+
+            if (currentAnim === 'player-fall')
+            {
+                this.anims.play('player-land', true);
+            }
         }
 
         this.body.setVelocityX(this.scene.speed);
@@ -109,6 +148,22 @@ export default class Player extends Phaser.GameObjects.Sprite
         {
             this.die();
         }
+    }
+
+    private setGravityMomentum (): void
+    {
+        this.body.setGravityY(500);
+
+        this.scene.time.addEvent({
+            delay: 100,
+            callback: this.resetGravity,
+            callbackScope: this
+        });
+    }
+
+    private resetGravity ()
+    {
+        this.body.setGravityY(1000);
     }
 
     /**
@@ -123,9 +178,11 @@ export default class Player extends Phaser.GameObjects.Sprite
         this.scene.events.emit('setCoin', this.coinCount);
     }
 
-    public setBonus (bonus)
+    public setBonus (bonus: number): Player
     {
         this.coinCount += bonus;
+
+        return this;
     }
 
     /**
@@ -139,9 +196,11 @@ export default class Player extends Phaser.GameObjects.Sprite
     /**
      * set player pause
      */
-    public setPause (bool: boolean)
+    public setPause (bool: boolean): Player
     {
         this.isPaused = bool;
+
+        return this;
     }
 
     /**
@@ -157,8 +216,6 @@ export default class Player extends Phaser.GameObjects.Sprite
         this.isDead = true;
 
         this.body.stop().setAllowGravity(false);
-
-        this.anims.play('dead');
 
         this.scene.gameOver();
     }
