@@ -22,6 +22,7 @@ export default class Player extends Phaser.GameObjects.Sprite
     private isPaused: boolean = false;
     private coinCount: number = 0;
     private isJumping: boolean = false;
+    private isMobile: boolean = false;
 
     constructor (scene: GameScene, x: number, y: number, texture: string, frame: string)
     {
@@ -59,46 +60,7 @@ export default class Player extends Phaser.GameObjects.Sprite
 
         if (android || iOS)
         {
-            this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) =>
-            {
-                if (pointer.leftButtonDown() && pointer.getDuration() < 250 && this.body.blocked.down && !this.isJumping)
-                {
-                    this.jumpTime = this.scene.time.now;
-
-                    this.isJumping = true;
-
-                    this.body.setVelocityY(-400);
-
-                    this.scene.playSound('jumpSfx');
-
-                    this.anims.play('player-jump', true);
-                }
-
-                if (pointer.leftButtonDown() && this.isJumping && this.jumpTime + 350 < this.scene.time.now)
-                {
-                    this.isJumping = false;
-
-                    this.body.setVelocityY(0);
-
-                    this.setGravityMomentum();
-
-                    this.anims.play('player-fall', true);
-                }
-            });
-
-            this.scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) =>
-            {
-                if (pointer.leftButtonReleased() && this.isJumping)
-                {
-                    this.isJumping = false;
-
-                    this.body.setVelocityY(0);
-
-                    this.setGravityMomentum();
-
-                    this.anims.play('player-fall', true);
-                }
-            });
+            this.isMobile = true;
         }
     }
 
@@ -113,45 +75,90 @@ export default class Player extends Phaser.GameObjects.Sprite
             return;
         }
 
-        const { up } = this.keys;
         const { blocked } = this.body;
 
-        // jump now
-        if (up.isDown && up.getDuration() < 250 && blocked.down && !this.isJumping)
+        if (!this.isMobile)
         {
-            this.jumpTime = time;
+            const { up } = this.keys;
 
-            this.isJumping = true;
+            // jump now
+            if (up.isDown && up.getDuration() < 250 && blocked.down && !this.isJumping)
+            {
+                this.jumpTime = time;
 
-            this.body.setVelocityY(-400);
+                this.isJumping = true;
 
-            this.scene.playSound('jumpSfx');
+                this.body.setVelocityY(-400);
 
-            this.anims.play('player-jump', true);
+                this.scene.playSound('jumpSfx');
+
+                this.anims.play('player-jump', true);
+            }
+
+            // end of jump
+            if (up.isDown && this.isJumping && this.jumpTime + 350 < time)
+            {
+                this.isJumping = false;
+
+                this.body.setVelocityY(0);
+
+                this.setGravityMomentum();
+
+                this.anims.play('player-fall', true);
+            }
+
+            // player stop the jump
+            if (up.isUp && this.isJumping)
+            {
+                this.isJumping = false;
+
+                this.body.setVelocityY(0);
+
+                this.setGravityMomentum();
+
+                this.anims.play('player-fall', true);
+            }
         }
-
-        // end of jump
-        if (up.isDown && this.isJumping && this.jumpTime + 350 < time)
+        else
         {
-            this.isJumping = false;
+            const pointer = this.scene.input.activePointer;
+            // jump now
+            if (pointer.isDown && pointer.getDuration() < 250 && blocked.down && !this.isJumping)
+            {
+                this.jumpTime = time;
 
-            this.body.setVelocityY(0);
+                this.isJumping = true;
 
-            this.setGravityMomentum();
+                this.body.setVelocityY(-400);
 
-            this.anims.play('player-fall', true);
-        }
+                this.scene.playSound('jumpSfx');
 
-        // player stop the jump
-        if (up.isUp && this.isJumping)
-        {
-            this.isJumping = false;
+                this.anims.play('player-jump', true);
+            }
 
-            this.body.setVelocityY(0);
+            // end of jump
+            if (pointer.isDown && this.isJumping && this.jumpTime + 350 < time)
+            {
+                this.isJumping = false;
 
-            this.setGravityMomentum();
+                this.body.setVelocityY(0);
 
-            this.anims.play('player-fall', true);
+                this.setGravityMomentum();
+
+                this.anims.play('player-fall', true);
+            }
+
+            // player stop the jump
+            if (!pointer.isDown && this.isJumping)
+            {
+                this.isJumping = false;
+
+                this.body.setVelocityY(0);
+
+                this.setGravityMomentum();
+
+                this.anims.play('player-fall', true);
+            }
         }
 
         // if blocked to ceiling
