@@ -152,10 +152,10 @@ export default class Player extends Phaser.GameObjects.Sprite
 
     private setGravityMomentum (): void
     {
-        this.body.setGravityY(500);
+        this.body.setGravityY(400);
 
         this.scene.time.addEvent({
-            delay: 100,
+            delay: 150,
             callback: this.resetGravity,
             callbackScope: this
         });
@@ -181,6 +181,10 @@ export default class Player extends Phaser.GameObjects.Sprite
     public setBonus (bonus: number): Player
     {
         this.coinCount += bonus;
+
+        this.scene.playSound('coinSfx', { volume: 0.1 });
+
+        this.scene.events.emit('setCoin', this.coinCount);
 
         return this;
     }

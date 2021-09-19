@@ -27,7 +27,6 @@ export default class GameScene extends Scene
     public speed: number = 90;
     public isBlur: boolean = false;
     private pauseText: Phaser.GameObjects.BitmapText;
-    // private countDownText: Phaser.GameObjects.BitmapText;
 
     constructor ()
     {
@@ -180,15 +179,23 @@ export default class GameScene extends Scene
                 else
                 {
                     this.player?.setPause(false);
+
                     this.bullet?.setPause(false);
+
                     countDownText.destroy();
+
                     stageText.destroy();
                 }
             },
         });
     }
 
-    public playSound (snd: string, config: Phaser.Types.Sound.SoundConfig = {}): void
+    /**
+     * Play sounds when game is focus
+     * @param snd 
+     * @param config 
+     */
+    public playSound (snd: string, config: Phaser.Types.Sound.SoundConfig = { }): void
     {
         if (this.isBlur)
         {
@@ -197,20 +204,6 @@ export default class GameScene extends Scene
 
         this.sound.play(snd, config);
     }
-
-    // private addMap (): void
-    // {
-    //     // add the tiled map
-    //     this.map = this.make.tilemap({ key: `map${this.level}` });
-
-    //     this.addLayers();
-
-    //     this.addObjectsFromMap();
-
-    //     this.addColliders();
-
-    //     this.cameras.main.fadeIn(500);
-    // }
 
     /**
      * Add the Tiled layers
@@ -230,10 +223,6 @@ export default class GameScene extends Scene
         this.map.createFromObjects('objects', [
             // @ts-ignore
             { name: 'coin', classType: Coin, key: 'coin', frame: 0 },
-            // @ts-ignore
-            // { name: 'powerup', classType: PowerUp, key: '', frame: 6 },
-            // @ts-ignore
-            // { name: '', classType: , key: '', frame: 11 },
         ]);
     }
 
@@ -352,28 +341,45 @@ export default class GameScene extends Scene
                 onComplete: () =>
                 {
                     this.level += 1;
+
                     if (this.level === 5)
                     {
                         this.level = 1;
                         this.speed += 10;
                     }
 
+                    const midPoint = this.cameras.main.midPoint;
+
+                    const stageBonusText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'end stage bonus: ' + bonus, FONT_SIZE, 1)
+                        .setDepth(50)
+                        .setOrigin(0.5, 0)
+                        .setTintFill(COLOR.WHITE);
+
                     // add level bonus
                     const bonusTimer = this.time.addEvent({
-                        delay: 0.1,
-                        repeat: bonus,
+                        delay: 2000,
                         callback: () =>
                         {
-                            this.player.setCoinCount();
+                            this.player.setBonus(bonus);
 
                             if (bonusTimer.getOverallProgress() === 1)
                             {
-                                this.nextStage();
+                                stageBonusText.destroy();
+                                this.nextStageDelay();
                             }
                         },
                     });
                 }
             });
+        });
+    }
+
+    private nextStageDelay (): void
+    {
+        this.time.addEvent({
+            delay: 2000,
+            callback: this.nextStage,
+            callbackScope: this
         });
     }
 
