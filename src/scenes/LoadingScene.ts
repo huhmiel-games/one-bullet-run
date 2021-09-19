@@ -8,8 +8,8 @@ import explosion from '../assets/graphics/explosion.png';
 import coin from '../assets/graphics/coin.png';
 import map1 from '../assets/map/map1.json';
 import map2 from '../assets/map/map2.json';
-import map3 from '../assets/map/map3.json';
-import map4 from '../assets/map/map4.json';
+// import map3 from '../assets/map/map3.json';
+// import map4 from '../assets/map/map4.json';
 import blipSfx from '../assets/sfx/blipSfx.wav';
 import jumpSfx from '../assets/sfx/jumpSfx.wav';
 import coinSfx from '../assets/sfx/coinSfx.wav';
@@ -62,8 +62,8 @@ export default class LoadingScene extends Scene
         this.load.image('bullet', bullet);
         this.load.tilemapTiledJSON('map1', map1);
         this.load.tilemapTiledJSON('map2', map2);
-        this.load.tilemapTiledJSON('map3', map3);
-        this.load.tilemapTiledJSON('map4', map4);
+        // this.load.tilemapTiledJSON('map3', map3);
+        // this.load.tilemapTiledJSON('map4', map4);
         this.load.audio('blipSfx', blipSfx);
         this.load.audio('jumpSfx', jumpSfx);
         this.load.audio('coinSfx', coinSfx);
@@ -120,8 +120,6 @@ export default class LoadingScene extends Scene
             frameRate: 8,
             repeat: -1
         });
-
-
     }
 
     /**

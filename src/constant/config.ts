@@ -17,3 +17,14 @@ export const enum SCENE_NAME
     LOADING = 'LoadingScene',
     LOGO = 'LogoScene',
 }
+
+export const enum DEPTH
+{
+    BACK = 1,
+    PLATFORM = 10,
+    COIN = 15,
+    PLAYER = 20,
+    BULLET = 30,
+    EXPLOSION = 40,
+    TEXT = 50
+}

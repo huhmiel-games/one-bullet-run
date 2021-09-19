@@ -3,7 +3,7 @@ import Bullet from '../characters/Bullet';
 import Coin from '../characters/Coin';
 import Player from '../characters/Player';
 import { COLOR } from '../constant/color';
-import { WIDTH, HEIGHT, FONT, FONT_SIZE, SCENE_NAME } from '../constant/config';
+import { WIDTH, HEIGHT, FONT, FONT_SIZE, SCENE_NAME, DEPTH } from '../constant/config';
 
 /**
  * @description a main game scene example
@@ -111,7 +111,7 @@ export default class GameScene extends Scene
                 const midPoint = this.cameras.main.midPoint;
 
                 this.pauseText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'pause', FONT_SIZE * 2, 1)
-                    .setDepth(50)
+                    .setDepth(DEPTH.TEXT)
                     .setOrigin(0.5, 0)
                     .setTintFill(COLOR.WHITE);
             });
@@ -144,7 +144,7 @@ export default class GameScene extends Scene
     {
         // Handle logic here
         // end of stage
-        if (this.player.body.x > 3900)
+        if (this.player.body.x > 2460)
         {
             this.endStage();
         }
@@ -155,12 +155,12 @@ export default class GameScene extends Scene
         const stageTextValue = `stage : ${this.level} speed : ${this.speed}`;
 
         const stageText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2 - 64, FONT, stageTextValue, FONT_SIZE, 1)
-            .setDepth(50)
+            .setDepth(DEPTH.TEXT)
             .setOrigin(0.5, 0)
             .setTintFill(COLOR.GREEN_LIGHT);
 
         const countDownText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2 - 32, FONT, 'start in 4', FONT_SIZE, 1)
-            .setDepth(50)
+            .setDepth(DEPTH.TEXT)
             .setOrigin(0.5, 0)
             .setTintFill(COLOR.WHITE);
 
@@ -210,9 +210,9 @@ export default class GameScene extends Scene
      */
     private addLayers (): void
     {
-        this.backgroundLayer = this.map.createLayer('background', this.tileset, 0, 0).setDepth(1);
+        this.backgroundLayer = this.map.createLayer('background', this.tileset, 0, 0).setDepth(DEPTH.BACK);
 
-        this.platformLayer = this.map.createLayer('platform', this.tileset, 0, 0).setDepth(10);
+        this.platformLayer = this.map.createLayer('platform', this.tileset, 0, 0).setDepth(DEPTH.PLATFORM);
     }
 
     /**
@@ -257,7 +257,7 @@ export default class GameScene extends Scene
 
         const { x, y } = this.player.body.center;
 
-        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(50).anims.play('explode', true);
+        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(DEPTH.EXPLOSION).anims.play('explode', true);
         explosion.once('animationcomplete', () =>
         {
             this.player.die();
@@ -320,7 +320,7 @@ export default class GameScene extends Scene
         const bonus = this.speed * this.level * this.level;
 
         const { x, y } = this.bullet.body.center;
-        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(50).anims.play('explode', true);
+        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(DEPTH.EXPLOSION).anims.play('explode', true);
         this.playSound('explosionSfx');
 
         this.bullet.body.setEnable(false);
@@ -342,7 +342,7 @@ export default class GameScene extends Scene
                 {
                     this.level += 1;
 
-                    if (this.level === 5)
+                    if (this.level === 3)
                     {
                         this.level = 1;
                         this.speed += 10;
@@ -351,7 +351,7 @@ export default class GameScene extends Scene
                     const midPoint = this.cameras.main.midPoint;
 
                     const stageBonusText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'end stage bonus: ' + bonus, FONT_SIZE, 1)
-                        .setDepth(50)
+                        .setDepth(DEPTH.TEXT)
                         .setOrigin(0.5, 0)
                         .setTintFill(COLOR.WHITE);
 

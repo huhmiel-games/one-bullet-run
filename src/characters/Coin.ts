@@ -1,3 +1,4 @@
+import { DEPTH } from '../constant/config';
 import GameScene from '../scenes/GameScene';
 
 export default class Coin extends Phaser.GameObjects.Sprite
@@ -19,7 +20,7 @@ export default class Coin extends Phaser.GameObjects.Sprite
             .setAllowGravity(false)
             .setSize(16, 16, false);
 
-        this.setDepth(5);
+        this.setDepth(DEPTH.COIN);
 
         this.anims.play('coin', true);
         this.scene.coins.push(this);

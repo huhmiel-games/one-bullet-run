@@ -1,3 +1,4 @@
+import { DEPTH } from '../constant/config';
 import GameScene from '../scenes/GameScene';
 
 export default class Bullet extends Phaser.GameObjects.Sprite
@@ -13,7 +14,7 @@ export default class Bullet extends Phaser.GameObjects.Sprite
         this.scene = scene;
         this.scene.physics.world.enable(this);
         this.scene.add.existing(this);
-        this.setTexture('bullet').setDepth(30);
+        this.setTexture('bullet').setDepth(DEPTH.BULLET);
 
         this.body.setImmovable(true)
             .setCollideWorldBounds(true)

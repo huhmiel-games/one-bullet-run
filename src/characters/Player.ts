@@ -1,3 +1,4 @@
+import { DEPTH } from '../constant/config';
 import GameScene from '../scenes/GameScene';
 
 interface BodySize
@@ -32,7 +33,7 @@ export default class Player extends Phaser.GameObjects.Sprite
 
         this.keys = this.scene.input.keyboard.createCursorKeys();
 
-        this.setDepth(20);
+        this.setDepth(DEPTH.PLAYER);
 
         this.anims.play('player-walk');
 
@@ -60,13 +61,42 @@ export default class Player extends Phaser.GameObjects.Sprite
         {
             this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) =>
             {
-                if (pointer.leftButtonDown() && pointer.getDuration() < 250 && this.body.blocked.down && this.jumpTime < this.scene.time.now + 200)
+                if (pointer.leftButtonDown() && pointer.getDuration() < 250 && this.body.blocked.down && !this.isJumping)
                 {
                     this.jumpTime = this.scene.time.now;
+
+                    this.isJumping = true;
 
                     this.body.setVelocityY(-400);
 
                     this.scene.playSound('jumpSfx');
+
+                    this.anims.play('player-jump', true);
+                }
+
+                if (pointer.leftButtonDown() && this.isJumping && this.jumpTime + 350 < this.scene.time.now)
+                {
+                    this.isJumping = false;
+
+                    this.body.setVelocityY(0);
+
+                    this.setGravityMomentum();
+
+                    this.anims.play('player-fall', true);
+                }
+            });
+
+            this.scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) =>
+            {
+                if (pointer.leftButtonReleased() && this.isJumping)
+                {
+                    this.isJumping = false;
+
+                    this.body.setVelocityY(0);
+
+                    this.setGravityMomentum();
+
+                    this.anims.play('player-fall', true);
                 }
             });
         }
@@ -111,7 +141,7 @@ export default class Player extends Phaser.GameObjects.Sprite
 
             this.anims.play('player-fall', true);
         }
-        
+
         // player stop the jump
         if (up.isUp && this.isJumping)
         {
