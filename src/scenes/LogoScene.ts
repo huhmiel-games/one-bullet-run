@@ -39,6 +39,8 @@ export default class LogoScene extends Scene
 
     public create (): void
     {
+        this.cameras.main.setRoundPixels(true).setBackgroundColor(COLOR.DARK);
+
         const sceneTitleText: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, 'huhmiel games', FONT_SIZE, 1)
             .setOrigin(0.5, 0.5)
             .setAlpha(0)
