@@ -230,7 +230,7 @@ export default class GameScene extends Scene
     {
         this.map.createFromObjects('objects', [
             // @ts-ignore
-            { name: 'coin', classType: Coin, key: 'coin', frame: 0 },
+            { name: 'coin', classType: Coin, key: 'atlas', frame: 'coin_0' },
         ]);
     }
 

@@ -1,18 +1,14 @@
 import { Scene } from 'phaser';
 import { FONT, FONT_SIZE, HEIGHT, SCENE_NAME, WIDTH } from '../constant/config';
 import tiles from '../assets/graphics/tiles.png';
-import playerAtlas from '../assets/graphics/player-atlas.png';
-import playerAtlasJSON from '../assets/graphics/player-atlas.json';
-import bullet from '../assets/graphics/bullet.png';
-import explosion from '../assets/graphics/explosion.png';
-import coin from '../assets/graphics/coin.png';
+import atlas from '../assets/graphics/atlas.png';
+import atlasJSON from '../assets/graphics/atlas.json';
 import map1 from '../assets/map/map1.json';
 import map2 from '../assets/map/map2.json';
+
 import music from '../assets/music/lights-out.ogg';
 import victoryTheme from '../assets/music/VictoryTheme.ogg';
 import gameOverTheme from '../assets/music/GameOverTheme.ogg';
-// import map3 from '../assets/map/map3.json';
-// import map4 from '../assets/map/map4.json';
 import blipSfx from '../assets/sfx/blipSfx.wav';
 import jumpSfx from '../assets/sfx/jumpSfx.wav';
 import coinSfx from '../assets/sfx/coinSfx.wav';
@@ -58,15 +54,10 @@ export default class LoadingScene extends Scene
         this.showProgressBar();
 
         // Preload all assets here, ex:
-        this.load.atlas('playerAtlas', playerAtlas, playerAtlasJSON);
-        this.load.spritesheet('explosion', explosion, { frameWidth: 112, frameHeight: 128 });
-        this.load.spritesheet('coin', coin, { frameWidth: 16, frameHeight: 16 });
+        this.load.atlas('atlas', atlas, atlasJSON);
         this.load.image('tiles', tiles);
-        this.load.image('bullet', bullet);
         this.load.tilemapTiledJSON('map1', map1);
         this.load.tilemapTiledJSON('map2', map2);
-        // this.load.tilemapTiledJSON('map3', map3);
-        // this.load.tilemapTiledJSON('map4', map4);
         this.load.audio('music', music);
         this.load.audio('victoryTheme', victoryTheme);
         this.load.audio('gameOverTheme', gameOverTheme);
@@ -82,7 +73,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'player-walk',
-            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-walk_', start: 0, end: 3 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'player-walk_', start: 0, end: 3 }),
             frameRate: 8,
             yoyo: false,
             repeat: -1,
@@ -90,7 +81,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'player-jump',
-            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 0, end: 0 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'player-jump_', start: 0, end: 0 }),
             frameRate: 6,
             yoyo: false,
             repeat: -1,
@@ -98,7 +89,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'player-fall',
-            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 1, end: 4 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'player-jump_', start: 1, end: 4 }),
             frameRate: 6,
             yoyo: false,
             repeat: -1,
@@ -106,7 +97,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'player-land',
-            frames: this.anims.generateFrameNames('playerAtlas', { prefix: 'player-jump_', start: 5, end: 6 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'player-jump_', start: 5, end: 6 }),
             frameRate: 24,
             yoyo: false,
             repeat: 0,
@@ -114,7 +105,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'explode',
-            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 9 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'explosion_', start: 0, end: 9 }),
             frameRate: 8,
             yoyo: false,
             repeat: 0,
@@ -122,7 +113,7 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'coin',
-            frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 3 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'coin_', start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
@@ -133,7 +124,7 @@ export default class LoadingScene extends Scene
      */
     private showCover (): void
     {
-        this.cameras.main.setRoundPixels(true);
+        this.cameras.main.setRoundPixels(true).setBackgroundColor(COLOR.DARK);
 
         this.add.image(WIDTH / 2, HEIGHT / 2, 'background');
 

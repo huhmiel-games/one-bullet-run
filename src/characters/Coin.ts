@@ -8,13 +8,13 @@ export default class Coin extends Phaser.GameObjects.Sprite
 
     constructor (scene: GameScene, x: number, y: number)
     {
-        super(scene, x, y, '', undefined);
+        super(scene, x, y, 'atlas', 'coin_0');
 
         this.scene = scene;
         this.scene.physics.world.enable(this);
         this.scene.add.existing(this);
 
-        this.setTexture('coin').setFrame(0);
+        
 
         this.body.setImmovable()
             .setAllowGravity(false)
