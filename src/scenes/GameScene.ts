@@ -29,6 +29,7 @@ export default class GameScene extends Scene
     private pauseText: Phaser.GameObjects.BitmapText;
     private music: Phaser.Sound.BaseSound;
     private levelCount: number = 1;
+    private bad: Phaser.GameObjects.Sprite;
 
     constructor ()
     {
@@ -69,7 +70,11 @@ export default class GameScene extends Scene
         this.player = new Player(this, WIDTH / 2, HEIGHT - 32, 'playerAtlas', 'player-walk_0');
 
         // add the bullet
-        this.bullet = new Bullet(this, 10, HEIGHT - 32);
+        this.bullet = new Bullet(this, 18, HEIGHT - 28).setAlpha(0);
+
+        // add the bad
+        this.bad = this.add.sprite(46, HEIGHT - 32, 'atlas', 'bad-idle_0').setDepth(DEPTH.TEXT);
+        this.bad.anims.play('badIdle');
 
         // pause player and bullet
         this.player?.setPause(true);
@@ -184,11 +189,13 @@ export default class GameScene extends Scene
                 }
                 else
                 {
+                    this.bad.anims.play('badShoot').once('animationcomplete', () => this.bad.anims.play('badIdle'));
+
                     this.playSound('blipSfx', { rate: 0.95 });
 
                     this.player?.setPause(false);
 
-                    this.bullet?.setPause(false);
+                    this.bullet?.setPause(false).setAlpha(1);
 
                     countDownText.destroy();
 
@@ -427,9 +434,8 @@ export default class GameScene extends Scene
         this.player.body.setEnable(true).reset(WIDTH / 2, HEIGHT - 32);
 
         // reset bullet
-        this.bullet.alpha = 1;
         this.bullet.setPause(true);
-        this.bullet.body.setEnable(true).reset(10, HEIGHT - 32);
+        this.bullet.body.setEnable(true).reset(18, HEIGHT - 28);
 
         this.startCountDown();
         this.music.play();

@@ -5,7 +5,6 @@ import atlas from '../assets/graphics/atlas.png';
 import atlasJSON from '../assets/graphics/atlas.json';
 import map1 from '../assets/map/map1.json';
 import map2 from '../assets/map/map2.json';
-
 import music from '../assets/music/lights-out.ogg';
 import victoryTheme from '../assets/music/VictoryTheme.ogg';
 import gameOverTheme from '../assets/music/GameOverTheme.ogg';
@@ -105,10 +104,11 @@ export default class LoadingScene extends Scene
 
         this.anims.create({
             key: 'explode',
-            frames: this.anims.generateFrameNames('atlas', { prefix: 'explosion_', start: 0, end: 9 }),
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'explosion_', start: 0, end: 8 }),
             frameRate: 8,
             yoyo: false,
             repeat: 0,
+            hideOnComplete: true
         });
 
         this.anims.create({
@@ -116,6 +116,20 @@ export default class LoadingScene extends Scene
             frames: this.anims.generateFrameNames('atlas', { prefix: 'coin_', start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
+        });
+
+        this.anims.create({
+            key: 'badIdle',
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'bad-idle_', start: 0, end: 5 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'badShoot',
+            frames: this.anims.generateFrameNames('atlas', { prefix: 'bad-shoot_', start: 0, end: 5 }),
+            frameRate: 8,
+            repeat: 0,
         });
     }
 

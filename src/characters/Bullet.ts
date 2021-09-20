@@ -51,8 +51,10 @@ export default class Bullet extends Phaser.GameObjects.Sprite
     /**
      * set bullet pause
      */
-    public setPause (bool: boolean)
+    public setPause (bool: boolean): Bullet
     {
         this.isPaused = bool;
+
+        return this;
     }
 }
