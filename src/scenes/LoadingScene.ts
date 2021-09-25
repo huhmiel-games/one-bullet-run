@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { FONT, FONT_SIZE, HEIGHT, SCENE_NAME, WIDTH } from '../constant/config';
-import tiles from '../assets/graphics/tiles.png';
+import tiles from '../assets/graphics/tiles-extruded.png';
 import atlas from '../assets/graphics/atlas.png';
 import atlasJSON from '../assets/graphics/atlas.json';
 import map1 from '../assets/map/map1.json';
@@ -12,11 +12,12 @@ import blipSfx from '../assets/sfx/blipSfx.wav';
 import jumpSfx from '../assets/sfx/jumpSfx.wav';
 import coinSfx from '../assets/sfx/coinSfx.wav';
 import explosionSfx from '../assets/sfx/explosionSfx.wav';
+import shootSfx from '../assets/sfx/shootSfx.wav';
 
 import { COLOR } from '../constant/color';
 
 /**
- * @description a loading scene example, handle the preload of all assets
+ * @description handle the preload of all assets
  * @author © Philippe Pereira 2020
  * @export
  * @class LoadingScene
@@ -64,6 +65,7 @@ export default class LoadingScene extends Scene
         this.load.audio('jumpSfx', jumpSfx);
         this.load.audio('coinSfx', coinSfx);
         this.load.audio('explosionSfx', explosionSfx);
+        this.load.audio('shootSfx', shootSfx);
     }
 
     public create (): void
@@ -162,10 +164,10 @@ export default class LoadingScene extends Scene
             .setDisplaySize(WIDTH / 4 * 3 - 2, 4);
 
         // Add percentage text
-        const loadingpercentage: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT - HEIGHT / 8, FONT, 'loading:', FONT_SIZE, 1)
+        const loadingpercentage: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT - HEIGHT / 3, FONT, 'loading:', FONT_SIZE, 1)
             .setOrigin(0.5, 0.5)
             .setAlpha(1)
-            .setTintFill(COLOR.GREEN);
+            .setTintFill(COLOR.WHITE);
 
         //  Crop the filler along its width, proportional to the amount of files loaded.
         this.load.on('progress', (progress: number) =>
@@ -173,6 +175,20 @@ export default class LoadingScene extends Scene
             loadingpercentage.text = `loading: ${Math.round(progress * 100)}%`;
 
             img.setCrop(0, 0, Math.ceil(progress * w), h);
+
+            if (Math.round(progress * 100) === 100)
+            {
+                loadingpercentage.text = 'processing audio, please wait';
+            }
+
+        }).on('load', (f) =>
+        {
+            console.timeEnd(`load ${f.type}/${f.key}`);
+            console.time(`process ${f.type}/${f.key}`);
+
+        }).on('filecomplete', (k, t) =>
+        {
+            console.timeEnd(`process ${t}/${k}`);
 
         }).on('complete', () =>
         {

@@ -17,7 +17,6 @@ export default class Bullet extends Phaser.GameObjects.Sprite
         this.setTexture('atlas').setFrame('bullet').setDepth(DEPTH.BULLET);
 
         this.body.setImmovable(true)
-            .setCollideWorldBounds(true)
             .setAllowGravity(false)
             .setSize(16, 16, false);
     }

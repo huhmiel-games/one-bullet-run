@@ -14,8 +14,6 @@ export default class Coin extends Phaser.GameObjects.Sprite
         this.scene.physics.world.enable(this);
         this.scene.add.existing(this);
 
-        
-
         this.body.setImmovable()
             .setAllowGravity(false)
             .setSize(16, 16, false);
@@ -23,6 +21,7 @@ export default class Coin extends Phaser.GameObjects.Sprite
         this.setDepth(DEPTH.COIN);
 
         this.anims.play('coin', true);
+
         this.scene.coins.push(this);
     }
 }

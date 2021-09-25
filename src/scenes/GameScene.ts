@@ -52,16 +52,11 @@ export default class GameScene extends Scene
 
     public create (): void
     {
-        // set the fps to 120 for good collisions at high speed (only if needed)
-        // this.physics.world.setFPS(120);
-
         // add the tiled map
         this.map = this.make.tilemap({ key: `map${this.level}` });
 
         // add the tileset associated to the map
-        this.tileset = this.map.addTilesetImage('tiles', 'tiles');
-
-        // add the map
+        this.tileset = this.map.addTilesetImage('tiles', 'tiles', 8, 8, 1, 2);
 
         // add the layers
         this.addLayers();
@@ -78,13 +73,16 @@ export default class GameScene extends Scene
 
         // pause player and bullet
         this.player?.setPause(true);
+
         this.bullet?.setPause(true);
 
         // add enemies, coins, doors, etc from map objects layer
         this.addObjectsFromMap();
 
         // camera must follow player
-        this.cameras.main.startFollow(this.player).setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+        this.cameras.main.startFollow(this.player)
+            .setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
+            .setRoundPixels(true);
 
         this.addColliders();
 
@@ -93,14 +91,24 @@ export default class GameScene extends Scene
         // Launch the HUD Scene
         this.scene.launch(SCENE_NAME.HUD).setActive(true, SCENE_NAME.HUD);
 
+        // a pause bitmap text
+        this.pauseText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, 'pause', FONT_SIZE * 2, 1)
+            .setDepth(DEPTH.TEXT)
+            .setOrigin(0.5, 0)
+            .setTintFill(COLOR.WHITE)
+            .setScrollFactor(0)
+            .setVisible(false);
+
         // pause the game
-        if (this.game.events.listenerCount('blur') < 4)
+        if (this.game.events.listenerCount(Phaser.Core.Events.BLUR) < 4)
         {
-            this.game.events.on('blur', () =>
+            this.game.events.on(Phaser.Core.Events.BLUR, () =>
             {
                 this.isBlur = true;
 
                 this.player?.setPause(true).anims?.pause();
+
+                this.bad?.anims?.pause();
 
                 this.bullet?.setPause(true);
 
@@ -117,20 +125,17 @@ export default class GameScene extends Scene
                     return;
                 }
 
-                const midPoint = this.cameras.main.midPoint;
-
-                this.pauseText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'pause', FONT_SIZE * 2, 1)
-                    .setDepth(DEPTH.TEXT)
-                    .setOrigin(0.5, 0)
-                    .setTintFill(COLOR.WHITE);
+                this.pauseText.setVisible(true);
             });
 
             // unpause the game
-            this.game.events.on('focus', () =>
+            this.game.events.on(Phaser.Core.Events.FOCUS, () =>
             {
                 this.isBlur = false;
 
                 this.player?.setPause(false).anims?.resume();
+
+                this.bad?.anims?.resume();
 
                 this.bullet?.setPause(false);
 
@@ -142,7 +147,7 @@ export default class GameScene extends Scene
                     }
                 });
 
-                this.pauseText?.destroy();
+                this.pauseText?.setVisible(false);
             });
         }
 
@@ -191,7 +196,7 @@ export default class GameScene extends Scene
                 {
                     this.bad.anims.play('badShoot').once('animationcomplete', () => this.bad.anims.play('badIdle'));
 
-                    this.playSound('blipSfx', { rate: 0.95 });
+                    this.playSound('shootSfx');
 
                     this.player?.setPause(false);
 
@@ -373,12 +378,13 @@ export default class GameScene extends Scene
                         this.events.emit('setSpeed', this.speed);
                     }
 
-                    const midPoint = this.cameras.main.midPoint;
+                    const text = `end stage bonus: ${bonus}`;
 
-                    const stageBonusText = this.add.bitmapText(midPoint.x, midPoint.y, FONT, 'end stage bonus: ' + bonus, FONT_SIZE, 1)
+                    const stageBonusText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, text, FONT_SIZE, 1)
                         .setDepth(DEPTH.TEXT)
                         .setOrigin(0.5, 0)
-                        .setTintFill(COLOR.WHITE);
+                        .setTintFill(COLOR.WHITE)
+                        .setScrollFactor(0);
 
                     // add level bonus
                     const bonusTimer = this.time.addEvent({
