@@ -90,11 +90,6 @@ export default class GameOverScene extends Scene
         // fading the scene from black
         this.cameras.main.fadeIn(500).setBackgroundColor(COLOR.DARK);
 
-        this.input.keyboard.once('keydown', () =>
-        {
-            this.scene.start(SCENE_NAME.GAME);
-        });
-
         // handle click events on mobile
         const { android, iOS } = this.sys.game.device.os;
 
@@ -107,6 +102,13 @@ export default class GameOverScene extends Scene
                     this.scene.start(SCENE_NAME.GAME);
                 }
             });
+        }
+        else
+        {
+            this.input.keyboard.once(Phaser.Input.Keyboard.Events.ANY_KEY_DOWN, () =>
+        {
+            this.scene.start(SCENE_NAME.GAME);
+        });
         }
     }
 }

@@ -7,10 +7,7 @@ import progressBarBg from '../assets/ui/progress-bar-bg.png';
 import galaxy8 from '../assets/fonts/galaxy/galaxy8.png';
 import galaxy8XML from '../assets/fonts/galaxy/galaxy8.xml';
 import background from '../assets/graphics/background.png';
-
 import { COLOR } from '../constant/color';
-
-
 
 /**
  * @description a logo scene example, this is the first scene to load
@@ -64,19 +61,12 @@ export default class LogoScene extends Scene
         });
 
         // to skip this scene
-        this.input.keyboard.once('keydown', () =>
-        {
-            tweenSceneTitleText.stop();
-
-            this.scene.start(SCENE_NAME.LOADING);
-        });
-
         // handle click events on mobile
         const { android, iOS } = this.sys.game.device.os;
 
         if (android || iOS)
         {
-            this.input.once('pointerdown', (pointer: Phaser.Input.Pointer) =>
+            this.input.once(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) =>
             {
                 if (pointer.leftButtonDown())
                 {
@@ -84,6 +74,15 @@ export default class LogoScene extends Scene
 
                     this.scene.start(SCENE_NAME.LOADING);
                 }
+            });
+        }
+        else
+        {
+            this.input.keyboard.once(Phaser.Input.Keyboard.Events.ANY_KEY_DOWN, () =>
+            {
+                tweenSceneTitleText.stop();
+
+                this.scene.start(SCENE_NAME.LOADING);
             });
         }
     }

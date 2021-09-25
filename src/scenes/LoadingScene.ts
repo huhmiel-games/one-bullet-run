@@ -206,7 +206,7 @@ export default class LoadingScene extends Scene
         }
         else
         {
-            this.input.keyboard.once(Phaser.Input.Keyboard.Events.KEY_DOWN, () =>
+            this.input.keyboard.once(Phaser.Input.Keyboard.Events.ANY_KEY_DOWN, () =>
             {
                 this.scene.start(SCENE_NAME.GAME);
             });
