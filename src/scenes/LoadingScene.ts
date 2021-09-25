@@ -170,7 +170,7 @@ export default class LoadingScene extends Scene
             .setTintFill(COLOR.WHITE);
 
         //  Crop the filler along its width, proportional to the amount of files loaded.
-        this.load.on('progress', (progress: number) =>
+        this.load.on(Phaser.Loader.Events.PROGRESS, (progress: number) =>
         {
             loadingpercentage.text = `loading: ${Math.round(progress * 100)}%`;
 
@@ -181,16 +181,7 @@ export default class LoadingScene extends Scene
                 loadingpercentage.text = 'processing audio, please wait';
             }
 
-        }).on('load', (f) =>
-        {
-            console.timeEnd(`load ${f.type}/${f.key}`);
-            console.time(`process ${f.type}/${f.key}`);
-
-        }).on('filecomplete', (k, t) =>
-        {
-            console.timeEnd(`process ${t}/${k}`);
-
-        }).on('complete', () =>
+        }).on(Phaser.Loader.Events.COMPLETE, () =>
         {
             loadingpercentage.text = 'press up key to start';
 
@@ -200,22 +191,24 @@ export default class LoadingScene extends Scene
 
     private startGameScene (): void
     {
-        this.input.keyboard.once('keydown', () =>
-        {
-            this.scene.start(SCENE_NAME.GAME);
-        });
-
         // handle click events on mobile
         const { android, iOS } = this.sys.game.device.os;
 
         if (android || iOS)
         {
-            this.input.once('pointerdown', (pointer: Phaser.Input.Pointer) =>
+            this.input.once(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) =>
             {
                 if (pointer.leftButtonDown())
                 {
                     this.scene.start(SCENE_NAME.GAME);
                 }
+            });
+        }
+        else
+        {
+            this.input.keyboard.once(Phaser.Input.Keyboard.Events.KEY_DOWN, () =>
+            {
+                this.scene.start(SCENE_NAME.GAME);
             });
         }
     }
