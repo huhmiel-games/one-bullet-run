@@ -22,7 +22,6 @@ export default class GameScene extends Scene
     private platformLayer: Phaser.Tilemaps.TilemapLayer;
     private tileset: string | Phaser.Tilemaps.Tileset | string[] | Phaser.Tilemaps.Tileset[];
     public bullet: Bullet;
-    public coins: Coin[] = [];
     public player: Player;
     public speed: number = 90;
     public isBlur: boolean = false;
@@ -30,6 +29,9 @@ export default class GameScene extends Scene
     private music: Phaser.Sound.BaseSound;
     private levelCount: number = 1;
     private bad: Phaser.GameObjects.Sprite;
+    private coinGroup: Phaser.Physics.Arcade.Group;
+    private stageCoinCount: number = 0;
+    private explosion: Phaser.GameObjects.Sprite;
 
     constructor ()
     {
@@ -44,6 +46,8 @@ export default class GameScene extends Scene
         this.isGameOver = false;
 
         this.isEndStage = false;
+
+        this.stageCoinCount = 0;
 
         this.player?.setPause(true);
         this.bullet?.setPause(true);
@@ -71,13 +75,18 @@ export default class GameScene extends Scene
         this.bad = this.add.sprite(46, HEIGHT - 32, 'atlas', 'bad-idle_0').setDepth(DEPTH.TEXT);
         this.bad.anims.play('badIdle');
 
+        // add the explosion
+        this.explosion = this.add.sprite(0, 0, 'explosion').setDepth(DEPTH.EXPLOSION).setActive(false).setVisible(false);
+
         // pause player and bullet
         this.player?.setPause(true);
 
         this.bullet?.setPause(true);
 
         // add enemies, coins, doors, etc from map objects layer
-        this.addObjectsFromMap();
+        this.creatCoins();
+
+        this.addCoins();
 
         // camera must follow player
         this.cameras.main.startFollow(this.player)
@@ -112,11 +121,12 @@ export default class GameScene extends Scene
 
                 this.bullet?.setPause(true);
 
-                this.coins.forEach(coin =>
+                this.coinGroup.children.each(coin =>
                 {
                     if (coin.active)
                     {
-                        coin.anims.pause();
+                        const c = coin as unknown as Coin;
+                        c.anims.pause() ;
                     }
                 });
 
@@ -139,11 +149,12 @@ export default class GameScene extends Scene
 
                 this.bullet?.setPause(false);
 
-                this.coins.forEach(coin =>
+                this.coinGroup.children.each(coin =>
                 {
                     if (coin.active)
                     {
-                        coin.anims.resume();
+                        const c = coin as unknown as Coin;
+                        c.anims.resume();
                     }
                 });
 
@@ -161,7 +172,7 @@ export default class GameScene extends Scene
         // end of stage
         if (this.player.body.x > 2460)
         {
-            this.endStage();
+            this.startEndStage();
         }
     }
 
@@ -194,7 +205,7 @@ export default class GameScene extends Scene
                 }
                 else
                 {
-                    this.bad.anims.play('badShoot').once('animationcomplete', () => this.bad.anims.play('badIdle'));
+                    this.bad.anims.play('badShoot').once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => this.bad.anims.play('badIdle'));
 
                     this.playSound('shootSfx');
 
@@ -236,17 +247,6 @@ export default class GameScene extends Scene
     }
 
     /**
-     * Convert Tiled objects layer into Sprites
-     */
-    private addObjectsFromMap (): void
-    {
-        this.map.createFromObjects('objects', [
-            // @ts-ignore
-            { name: 'coin', classType: Coin, key: 'atlas', frame: 'coin_0' },
-        ]);
-    }
-
-    /**
      * Add all needed colliders
      */
     private addColliders (): void
@@ -258,7 +258,7 @@ export default class GameScene extends Scene
 
         this.physics.add.collider(this.player, this.platformLayer, undefined, undefined, this);
         this.physics.add.overlap(this.player, this.bullet, this.handleCollideBullet, undefined, this);
-        this.physics.add.overlap(this.player, this.coins, this.handleCollideCoins, undefined, this);
+        this.physics.add.overlap(this.player, this.coinGroup, this.handleCollideCoins, undefined, this);
     }
 
     /**
@@ -277,11 +277,9 @@ export default class GameScene extends Scene
 
         const { x, y } = this.player.body.center;
 
-        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(DEPTH.EXPLOSION).anims.play('explode', true);
-        explosion.once('animationcomplete', () =>
-        {
-            this.player.die();
-        });
+        this.explosion.setPosition(x, y).setActive(true).setVisible(true).anims.play('explode', true);
+
+        this.explosion.once(Phaser.Animations.Events.ANIMATION_COMPLETE, this.setPlayerDead, this);
 
         this.playSound('explosionSfx');
 
@@ -290,6 +288,11 @@ export default class GameScene extends Scene
 
         this.bullet.body.setEnable(false);
         this.bullet.alpha = 0;
+    }
+
+    private setPlayerDead (): void
+    {
+        this.player.die();
     }
 
 
@@ -307,6 +310,7 @@ export default class GameScene extends Scene
         coin.setActive(false).setVisible(false);
 
         player.setCoinCount();
+        this.stageCoinCount += 1;
     }
 
     /**
@@ -332,7 +336,7 @@ export default class GameScene extends Scene
         });
     }
 
-    public endStage (): void
+    public startEndStage (): void
     {
         if (this.isEndStage)
         {
@@ -343,10 +347,10 @@ export default class GameScene extends Scene
 
         this.levelCount += 1;
 
-        const bonus = (BONUS + this.speed / 2) * this.levelCount;
-
         const { x, y } = this.bullet.body.center;
-        const explosion = this.add.sprite(x, y - 20, 'explosion').setDepth(DEPTH.EXPLOSION).anims.play('explode', true);
+
+        this.explosion.setPosition(x, y).setActive(true).setVisible(true).anims.play('explode', true);
+
         this.music.stop();
         this.playSound('explosionSfx');
 
@@ -357,51 +361,57 @@ export default class GameScene extends Scene
         this.player.anims.stop();
         this.player.setFlipX(true);
 
-        explosion.once('animationcomplete', () =>
-        {
-            this.player.setFlipX(false);
-            this.player.anims.play('player-walk', true);
+        this.explosion.once(Phaser.Animations.Events.ANIMATION_COMPLETE, this.startBonusEndStage, this);
+    }
 
-            this.playSound('victoryTheme', { volume: 0.5, rate: 1.1 });
+    private startBonusEndStage ()
+    {
+        this.player.setFlipX(false);
+        this.player.anims.play('player-walk', true);
 
-            this.tweens.add({
-                targets: this.player,
-                x: this.map.widthInPixels + 64,
-                onComplete: () =>
+        this.playSound('victoryTheme', { volume: 0.5, rate: 1.1 });
+
+        const bonus = Math.round((this.stageCoinCount / 4) + (this.speed / 2) * this.levelCount);
+
+        this.stageCoinCount = 0;
+
+        this.tweens.add({
+            targets: this.player,
+            x: this.map.widthInPixels + 64,
+            onComplete: () =>
+            {
+                this.level += 1;
+
+                if (this.level === 3)
                 {
-                    this.level += 1;
-
-                    if (this.level === 3)
-                    {
-                        this.level = 1;
-                        this.speed += 10;
-                        this.events.emit('setSpeed', this.speed);
-                    }
-
-                    const text = `end stage bonus: ${bonus}`;
-
-                    const stageBonusText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, text, FONT_SIZE, 1)
-                        .setDepth(DEPTH.TEXT)
-                        .setOrigin(0.5, 0)
-                        .setTintFill(COLOR.WHITE)
-                        .setScrollFactor(0);
-
-                    // add level bonus
-                    const bonusTimer = this.time.addEvent({
-                        delay: 2500,
-                        callback: () =>
-                        {
-                            this.player.setBonus(bonus);
-
-                            if (bonusTimer.getOverallProgress() === 1)
-                            {
-                                stageBonusText.destroy();
-                                this.nextStageDelay();
-                            }
-                        },
-                    });
+                    this.level = 1;
+                    this.speed += 10;
+                    this.events.emit('setSpeed', this.speed);
                 }
-            });
+
+                const text = `end stage bonus: ${bonus}`;
+
+                const stageBonusText = this.add.bitmapText(WIDTH / 2, HEIGHT / 2, FONT, text, FONT_SIZE, 1)
+                    .setDepth(DEPTH.TEXT)
+                    .setOrigin(0.5, 0)
+                    .setTintFill(COLOR.WHITE)
+                    .setScrollFactor(0);
+
+                // add level bonus
+                const bonusTimer = this.time.addEvent({
+                    delay: 2500,
+                    callback: () =>
+                    {
+                        this.player.setBonus(bonus);
+
+                        if (bonusTimer.getOverallProgress() === 1)
+                        {
+                            stageBonusText.destroy();
+                            this.nextStageDelay();
+                        }
+                    },
+                });
+            }
         });
     }
 
@@ -426,12 +436,12 @@ export default class GameScene extends Scene
 
         this.map.destroy();
 
-        this.coins.forEach(coin => coin.destroy());
+        this.coinGroup.children.each(coin => coin.setActive(false));
 
         // create the new map
         this.map = this.make.tilemap({ key: `map${this.level}` });
         this.addLayers();
-        this.addObjectsFromMap();
+        this.addCoins();
         this.addColliders();
         this.cameras.main.fadeIn(500);
 
@@ -448,4 +458,48 @@ export default class GameScene extends Scene
 
         this.isEndStage = false;
     }
+
+    /**
+     * Add coins to the map
+     */
+    private addCoins (): void
+    {
+        const layerArray: Phaser.Tilemaps.ObjectLayer = this.map.objects.filter((elm) => elm.name === 'objects')[0];
+
+        if (!layerArray || !layerArray.objects.length)
+        {
+            return;
+        }
+
+        layerArray.objects.forEach((element) =>
+        {
+            if (!element.x || !element.y)
+            {
+                return;
+            }
+
+            const coin: Coin = this.coinGroup.getFirstDead(true, element.x + 8, element.y - 8, 'atlas', 'coin_0', true);
+
+            coin.setActive(true)
+                .setVisible(true)
+                .anims.play('coin');
+
+            coin.body.setEnable(true);
+        });
+    }
+
+    /**
+     * Create a physics coin group
+     */
+    private creatCoins ()
+    {
+        this.coinGroup = this.physics.add.group({
+            classType: Coin,
+            maxSize: 128,
+            allowGravity: false,
+        });
+    }
 }
+
+
+

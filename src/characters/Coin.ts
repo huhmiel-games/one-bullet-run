@@ -21,7 +21,5 @@ export default class Coin extends Phaser.GameObjects.Sprite
         this.setDepth(DEPTH.COIN);
 
         this.anims.play('coin', true);
-
-        this.scene.coins.push(this);
     }
 }

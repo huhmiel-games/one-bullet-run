@@ -183,7 +183,16 @@ export default class LoadingScene extends Scene
 
         }).on(Phaser.Loader.Events.COMPLETE, () =>
         {
-            loadingpercentage.text = 'press up key to start';
+            const { android, iOS } = this.sys.game.device.os;
+
+            if (android || iOS)
+            {
+                loadingpercentage.text = 'touch to start';
+            }
+            else
+            {
+                loadingpercentage.text = 'press up key to start';
+            }
 
             this.startGameScene();
         });
