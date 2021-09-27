@@ -46,7 +46,7 @@ export default class GameOverScene extends Scene
             localStorage.setItem('highScore', data);
 
             this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `new high score : ${this.mainScene.player.getCoinCount().toString()} points at speed ${currentSpeed.toString()}`, FONT_SIZE, 1)
-                .setOrigin(0, 0.5);
+                .setOrigin(0.5, 0.5);
         }
         else
         {
