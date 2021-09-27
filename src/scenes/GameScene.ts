@@ -118,22 +118,12 @@ export default class GameScene extends Scene
             {
                 this.isBlur = true;
 
-                this.player?.setPause(true).anims?.pause();
-
-                this.physics.pause();
-
-                this.bad?.anims?.pause();
-
-                this.bullet?.setPause(true);
-
-                this.coinGroup?.children?.each(coin =>
+                if (this.physics.world)
                 {
-                    if (coin.active)
-                    {
-                        const c = coin as unknown as Coin;
-                        c.anims.pause() ;
-                    }
-                });
+                    this.physics.pause();
+                }
+
+                this?.anims?.pauseAll();
 
                 if (!this.cameras.main)
                 {
@@ -143,39 +133,24 @@ export default class GameScene extends Scene
                 this.pauseText.setVisible(true);
 
                 this.countDownTimer.paused = true;
-            });
+            }, this);
 
             // unpause the game
             this.game.events.on(Phaser.Core.Events.FOCUS, () =>
             {
                 this.isBlur = false;
 
-                if (this.countDownTimer.repeatCount === 0)
+                if (this.physics.world)
                 {
-                    this.player?.setPause(false);
-
-                    this.bullet?.setPause(false);
+                    this.physics.resume();
                 }
 
-                this.physics.resume();
+                this?.anims?.resumeAll();
 
-                this.player?.anims?.resume();
-
-                this.bad?.anims?.resume();
-
-                this.coinGroup?.children?.each(coin =>
-                {
-                    if (coin.active)
-                    {
-                        const c = coin as unknown as Coin;
-                        c.anims.resume();
-                    }
-                });
-
-                this.pauseText?.setVisible(false);
+                this?.pauseText?.setVisible(false);
 
                 this.countDownTimer.paused = false;
-            });
+            }, this);
         }
 
         this.startCountDown();
