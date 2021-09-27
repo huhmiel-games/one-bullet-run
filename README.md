@@ -2,6 +2,8 @@
 
 ![main menu](https://github.com/huhmiel-games/one-bullet-run/blob/master/src/assets/graphics/background.png)
 
+[Test it](https://itch.io/embed-upload/4514202?color=081820)
+
 A simple 2D runner for the ScoreSpace Jam. Made with Phaser 3.
 
 Based on https://github.com/photonstorm/phaser3-project-template
