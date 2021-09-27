@@ -32,6 +32,7 @@ export default class GameScene extends Scene
     private coinGroup: Phaser.Physics.Arcade.Group;
     private stageCoinCount: number = 0;
     private explosion: Phaser.GameObjects.Sprite;
+    private countDownTimer: Phaser.Time.TimerEvent;
 
     constructor ()
     {
@@ -48,6 +49,8 @@ export default class GameScene extends Scene
         this.isEndStage = false;
 
         this.stageCoinCount = 0;
+
+        this.speed = 90;
 
         this.player?.setPause(true);
         this.bullet?.setPause(true);
@@ -66,7 +69,7 @@ export default class GameScene extends Scene
         this.addLayers();
 
         // add the player
-        this.player = new Player(this, WIDTH / 2, HEIGHT - 32, 'playerAtlas', 'player-walk_0');
+        this.player = new Player(this, WIDTH / 2, HEIGHT - 32, 'atlas', 'player-walk_0');
 
         // add the bullet
         this.bullet = new Bullet(this, 18, HEIGHT - 28).setAlpha(0);
@@ -117,11 +120,13 @@ export default class GameScene extends Scene
 
                 this.player?.setPause(true).anims?.pause();
 
+                this.physics.pause();
+
                 this.bad?.anims?.pause();
 
                 this.bullet?.setPause(true);
 
-                this.coinGroup.children.each(coin =>
+                this.coinGroup?.children?.each(coin =>
                 {
                     if (coin.active)
                     {
@@ -136,6 +141,8 @@ export default class GameScene extends Scene
                 }
 
                 this.pauseText.setVisible(true);
+
+                this.countDownTimer.paused = true;
             });
 
             // unpause the game
@@ -143,13 +150,20 @@ export default class GameScene extends Scene
             {
                 this.isBlur = false;
 
-                this.player?.setPause(false).anims?.resume();
+                if (this.countDownTimer.repeatCount === 0)
+                {
+                    this.player?.setPause(false);
+
+                    this.bullet?.setPause(false);
+                }
+
+                this.physics.resume();
+
+                this.player?.anims?.resume();
 
                 this.bad?.anims?.resume();
 
-                this.bullet?.setPause(false);
-
-                this.coinGroup.children.each(coin =>
+                this.coinGroup?.children?.each(coin =>
                 {
                     if (coin.active)
                     {
@@ -159,6 +173,8 @@ export default class GameScene extends Scene
                 });
 
                 this.pauseText?.setVisible(false);
+
+                this.countDownTimer.paused = false;
             });
         }
 
@@ -191,12 +207,12 @@ export default class GameScene extends Scene
             .setTintFill(COLOR.WHITE);
 
         // start countdown
-        const countDownTimer = this.time.addEvent({
+        this.countDownTimer = this.time.addEvent({
             delay: 1000,
             repeat: 3,
             callback: () =>
             {
-                const startCount = countDownTimer.repeatCount;
+                const startCount = this.countDownTimer.repeatCount;
 
                 if (startCount > 0)
                 {
@@ -310,6 +326,7 @@ export default class GameScene extends Scene
         coin.setActive(false).setVisible(false);
 
         player.setCoinCount();
+
         this.stageCoinCount += 1;
     }
 
@@ -321,7 +338,7 @@ export default class GameScene extends Scene
         this.physics.add.collider(this.player, this.bullet, undefined, undefined, this);
 
         this.level = 1;
-        this.speed = 90;
+
         this.levelCount = 1;
 
         this.music.stop();
@@ -436,7 +453,7 @@ export default class GameScene extends Scene
 
         this.map.destroy();
 
-        this.coinGroup.children.each(coin => coin.setActive(false));
+        this.coinGroup?.children?.each(coin => coin.setActive(false));
 
         // create the new map
         this.map = this.make.tilemap({ key: `map${this.level}` });

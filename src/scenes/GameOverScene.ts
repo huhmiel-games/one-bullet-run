@@ -3,6 +3,11 @@ import { COLOR } from '../constant/color';
 import { FONT, FONT_SIZE, HEIGHT, WIDTH, SCENE_NAME } from '../constant/config';
 import GameScene from './GameScene';
 
+interface IScore
+{
+    score: number;
+    speed: number;
+}
 
 /**
  * @description a game over scene example
@@ -27,36 +32,54 @@ export default class GameOverScene extends Scene
 
         this.mainScene = this.scene.get(SCENE_NAME.GAME) as GameScene;
 
-        const currentScore = this.mainScene.player.getCoinCount();
+        const currentScore: number = this.mainScene.player.getCoinCount();
+
+        const currentSpeed: number = this.mainScene.speed;
 
         const highScoreStored = localStorage.getItem('highScore');
 
         if (!highScoreStored)
         {
-            const data = JSON.stringify([currentScore]);
+            // create empty high score
+            const data = JSON.stringify([{ score: currentScore, speed: this.mainScene.speed }]);
 
             localStorage.setItem('highScore', data);
 
-            this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `new high score : ${this.mainScene.player.getCoinCount().toString()} points`, FONT_SIZE, 1)
-                .setOrigin(0.5, 0.5);
+            this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `new high score : ${this.mainScene.player.getCoinCount().toString()} points at speed ${currentSpeed.toString()}`, FONT_SIZE, 1)
+                .setOrigin(0, 0.5);
         }
         else
         {
-            const data: number[] = JSON.parse(highScoreStored);
+            const data: IScore[] = JSON.parse(highScoreStored);
 
+            // update old high scores
+            if (typeof data[0] === 'number')
+            {
+                const _data = data as unknown as number[];
+
+                _data.forEach((e, i) =>
+                {
+                    const val: IScore = { score: e, speed: 90 };
+
+                    data[i] = val;
+                });
+            }
+
+            // show saved high score
             for (let i = 0; i < data.length; i++)
             {
-                const str = `${i + 1} :     ${data[i]} points`;
+                const str = `${i + 1} : ${data[i].score} points at speed ${data[i].speed}`;
 
-                this.add.bitmapText(WIDTH / 2, HEIGHT / 3 + 32 + (i * 12), FONT, str, FONT_SIZE, 1)
-                    .setOrigin(0.5, 0.5)
+                this.add.bitmapText(WIDTH / 5, HEIGHT / 3 + 32 + (i * 12), FONT, str, FONT_SIZE, 1)
+                    .setOrigin(0, 0.5)
                     .setTintFill(COLOR.WHITE);
             }
 
-            if (currentScore > data[data.length - 1] || data.length < 5)
+            // new high score
+            if (currentScore > data[data.length - 1].score || data.length < 5)
             {
-                data.push(currentScore);
-                data.sort((a: number, b: number) => b - a);
+                data.push({ score: currentScore, speed: currentSpeed });
+                data.sort((a: IScore, b: IScore) => b.score - a.score);
 
                 if (data.length > 5)
                 {
@@ -67,12 +90,12 @@ export default class GameOverScene extends Scene
 
                 localStorage.setItem('highScore', newData);
 
-                this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `new high score : ${this.mainScene.player.getCoinCount().toString()} points`, FONT_SIZE, 1)
+                this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `new high score : ${this.mainScene.player.getCoinCount().toString()} points at speed ${currentSpeed.toString()}`, FONT_SIZE, 1)
                     .setOrigin(0.5, 0.5).setTintFill(COLOR.WHITE);
             }
             else
             {
-                this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `score : ${this.mainScene.player.getCoinCount().toString()} points`, FONT_SIZE, 1)
+                this.add.bitmapText(WIDTH / 2, HEIGHT / 3, FONT, `score : ${this.mainScene.player.getCoinCount().toString()} points at speed ${currentSpeed.toString()}`, FONT_SIZE, 1)
                     .setOrigin(0.5, 0.5).setTintFill(COLOR.WHITE);
             }
 

@@ -13,6 +13,7 @@ import jumpSfx from '../assets/sfx/jumpSfx.wav';
 import coinSfx from '../assets/sfx/coinSfx.wav';
 import explosionSfx from '../assets/sfx/explosionSfx.wav';
 import shootSfx from '../assets/sfx/shootSfx.wav';
+import button from '../assets/ui/button.png';
 
 import { COLOR } from '../constant/color';
 
@@ -34,9 +35,6 @@ export default class LoadingScene extends Scene
                     key: 'background',
                     type: 'image'
                 }, {
-                    key: 'logo',
-                    type: 'image'
-                }, {
                     key: 'progressBar',
                     type: 'image'
                 }, {
@@ -56,6 +54,7 @@ export default class LoadingScene extends Scene
         // Preload all assets here, ex:
         this.load.atlas('atlas', atlas, atlasJSON);
         this.load.image('tiles', tiles);
+        this.load.image('button', button);
         this.load.tilemapTiledJSON('map1', map1);
         this.load.tilemapTiledJSON('map2', map2);
         this.load.audio('music', music);
@@ -147,7 +146,8 @@ export default class LoadingScene extends Scene
         // progress bar white background
         this.add.image(WIDTH / 2, HEIGHT / 4 * 3 + 2, 'progressBarBg')
             .setDisplaySize(WIDTH / 4 * 3, 6)
-            .setVisible(true);
+            .setVisible(true)
+            .setName('progressBarBg');
     }
 
     /**
@@ -167,6 +167,7 @@ export default class LoadingScene extends Scene
         const loadingpercentage: Phaser.GameObjects.BitmapText = this.add.bitmapText(WIDTH / 2, HEIGHT - HEIGHT / 3, FONT, 'loading:', FONT_SIZE, 1)
             .setOrigin(0.5, 0.5)
             .setAlpha(1)
+            .setDepth(10)
             .setTintFill(COLOR.WHITE);
 
         //  Crop the filler along its width, proportional to the amount of files loaded.
@@ -187,7 +188,14 @@ export default class LoadingScene extends Scene
 
             if (android || iOS)
             {
-                loadingpercentage.text = 'touch to start';
+                const bg = this.children.getByName('progressBarBg') as unknown as Phaser.GameObjects.Sprite;
+                bg.setVisible(false);
+
+                img.setVisible(false);
+
+                loadingpercentage.text = '';
+
+                this.add.image(WIDTH / 2, HEIGHT / 3 * 2, 'button');
             }
             else
             {
